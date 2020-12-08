@@ -1,0 +1,47 @@
+#!/bin/bash
+
+chr=$1
+
+var_dir=/proj/yunligrp/users/bryce/twas/UKB/data/BCX_GWAS_2020_known_variants
+exp_dir=/proj/yunligrp/users/bryce/twas/UKB/data/prediction_files/predicted_gexp/chr${chr}
+
+rm -f cor_vector_chr${chr}
+echo "cor" >> cor_vector_chr${chr}
+i=1
+while read var gene chunk; do
+	
+	if (( $i % 50 == 0 )); then
+		echo $i variants processed... for chr $chr
+	fi
+	i=$(( $i + 1 ))
+
+	pos=$( echo $var | cut -f 2 -d ':' | cut -f 1 -d '_' )
+	echo $var $gene
+	
+	zcat ${var_dir}/UKB_EUR_VuckovicSentinel_chr${chr}.dosage.gz | awk -v pos=$pos '$4==pos' | cut -f 7- -d ' ' | tawk > ${var_dir}/dosage_chr${chr}.tmp
+
+	if [ $( cat ${var_dir}/dosage_chr${chr}.tmp | wc -l ) -eq 0 ]; then
+		echo problem with dosage file for var $var
+		exit 1
+	fi
+
+	cor=$(paste ${var_dir}/dosage_chr${chr}.tmp \
+	<( cut -f 2 -d ' ' ${exp_dir}/DGN_chr${chr}_chunk${chunk}_${gene}_UKB_intersection.grex2 ) | awk -F "\t" '{
+        sum_x+=$1
+        sum_y+=$2
+        sum_xy+=$1*$2
+        sum_xx+=$1*$1
+        sum_yy+=$2*$2
+
+} END  {
+        print ( FNR*sum_xy - sum_x*sum_y) / (sqrt(FNR*sum_xx - sum_x*sum_x)*sqrt(FNR*sum_yy - sum_y*sum_y))
+
+}')
+
+	echo $cor >> cor_vector_chr${chr}
+
+done < <( tail -n +2 ${var_dir}/twas_level2_varGene_pairs | awk -v chr="^$chr:" '$1~chr' )
+
+paste <( cat ${var_dir}/twas_level2_varGene_pairs | awk -v chr="^$chr:" '$1~chr || $1~/unique/' ) cor_vector_chr${chr} > ${var_dir}/twas_level2_varGene_pairs_Correlation_chr${chr}
+rm cor_vector_chr${chr} ${var_dir}/dosage_chr${chr}.tmp
+
