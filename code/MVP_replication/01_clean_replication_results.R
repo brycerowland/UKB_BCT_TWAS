@@ -75,6 +75,7 @@ df_rep <- df_rep_raw  %>%
 
 write_tsv(df_rep, "../../data/MVP_replication_results/mvp_rep_full.tsv")
 
+read_tsv("../../data/MVP_replication_results/mvp_rep_full.tsv")
 
 mvp_phenos <- df_rep %>% distinct(phenotype) %>% pull()
 
@@ -173,7 +174,6 @@ inner_join(df_rep,
   summarise(sum(rep), 
             sum(rep_nominal))
 
-
 ################################# 
 # What about our 9 novel signals??
 ################################# 
@@ -181,7 +181,7 @@ inner_join(df_rep,
 #Read in info for 9 "novel" genes
 novel_genes <- read_csv("../conditional_analysis/REGENIE/copy_novel_genes.csv")
 
-novel_genes %>% select(gene_name, phenotype)
+novel_genes %>% filter(!(phenotype %in% mvp_phenos))
 
 #6 genes have a matching phenotype in MVP, although RBCK1 has both EOS# and EOS%.
 novel_genes_in_mvp <- novel_genes %>% 

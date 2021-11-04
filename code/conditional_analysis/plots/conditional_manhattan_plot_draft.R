@@ -94,11 +94,12 @@ cond_plot
 
 
 
-ggsave(filename = "../../../data/conditional_analysis/plots/man_plot_CA.png",
+ggsave(filename = "../../../data/conditional_analysis/plots/fig3_man_plot_CA.tiff",
           plot = cond_plot, 
-          width = 5, 
-          heigh = 3, 
-       units = "in")
+          width = 174, 
+          height = 174 * (3/5),
+       dpi = 1000,
+       units = "mm")
 
 
 pacsin2 <- cond_results_cum %>% 
