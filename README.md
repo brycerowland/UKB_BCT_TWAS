@@ -7,5 +7,3 @@ Our TWAS consists of several key analytical steps. First, we trained gene expres
 
 Data cleaning scripts from our MVP replication analysis are contained in `code/MVP_replication`, and code to generate supplementary tables are in `code/tables`.
 
-## Analysis Code
-
